@@ -4481,6 +4481,7 @@ figure.blockfig .gpscred{font-size:.72rem;opacity:.7;margin-top:4px;text-align:r
       intro: 'Petits plans simples issus de cours et d\'exercices de lecture GPS. Chaque question porte sur une colonne de la lecture d\'un cadre : type de spécification, élément tolérancé, éléments de référence, référence spécifiée, zone de tolérance, contraintes de situation.',
       fams: Object.keys(GPSApp_gpsp.FAM).map((k) => [k, GPSApp_gpsp.FAM[k]]),
       gen: (fams, n) => GPSApp_gpsp.generateSet(fams, n),
+      noFams: true,
       options: [], recap: () => '<h3>Lire un cadre de tolérancement</h3><p>La lecture suit toujours les mêmes colonnes : <b>type de spécification</b>, <b>élément tolérancé</b>, <b>éléments de référence</b>, <b>référence spécifiée</b>, <b>zone de tolérance</b>, <b>contraintes de situation</b>.</p><h3>Association des éléments de référence</h3><ul><li>Plan : plan tangent extérieur matière à la surface, minimisant le défaut de forme (critère min-max).</li><li>Alésage : axe du plus grand cylindre inscrit dans la surface, tangent côté matière (critère min-max).</li><li>Arbre : axe du plus petit cylindre circonscrit à la surface, tangent côté matière (critère min-max).</li><li>Plan médian : plan médian des deux plans tangents extérieurs matière aux deux surfaces planes.</li><li>Référence commune A-B : un seul élément de référence construit à partir des deux surfaces à la fois.</li></ul><h3>Zone de tolérance</h3><p>Une valeur précédée de Ø donne une zone cylindrique. Sans Ø, la zone est comprise entre deux plans parallèles (ou deux droites). Les cotes encadrées sont des cotes théoriques exactes.</p>',
     },
     calc: {
@@ -4605,9 +4606,9 @@ figure.blockfig .gpscred{font-size:.72rem;opacity:.7;margin-top:4px;text-align:r
       '<div class="topbar"><button class="linkbtn back" data-act="home">← Thèmes</button></div>' +
       brand(T.title, SUB ? 'QCM de S2I : calcul' : 'QCM de S2I, PTSI-PT') +
       '<p class="sub">' + esc(T.intro) + '</p>' +
-      '<section class="card"><div class="field"><span class="lab">Types de questions</span><div class="row" id="fams">' +
-      T.fams.map(([k, l]) => '<button class="chip" data-fam="' + k + '" aria-pressed="' + S.fams.includes(k) + '">' + esc(l) + '</button>').join('') +
-      '</div></div>' +
+      '<section class="card">' + (T.noFams ? '' : '<div class="field"><span class="lab">Types de questions</span><div class="row" id="fams">') +
+      (T.noFams ? '' : T.fams.map(([k, l]) => '<button class="chip" data-fam="' + k + '" aria-pressed="' + S.fams.includes(k) + '">' + esc(l) + '</button>').join('')) +
+      (T.noFams ? '' : '</div></div>') +
       '<div class="field"><span class="lab">Nombre de questions</span><div class="seg" id="nseg">' +
       [5, 10, 20].map((n) => '<button data-n="' + n + '" aria-pressed="' + (settings.n === n) + '">' + n + '</button>').join('') + '</div></div>' +
       '<div class="field"><span class="lab">Mode</span><div class="seg" id="mseg">' +
