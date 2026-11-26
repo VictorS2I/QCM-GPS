@@ -1,17 +1,25 @@
 {
-  "name": "Lecture GPS : petits plans",
-  "short_name": "Lecture GPS",
-  "description": "Exercices de lecture de cotation GPS (tolérancement géométrique), PT, Lycée Jules Renard.",
+  "name": "QCM de S2I : calcul, lycée Jules Renard",
+  "short_name": "QCM calcul",
+  "description": "QCM de sciences industrielles de l'ingénieur : figures de calcul, dérivation vectorielle, application numérique",
   "lang": "fr",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "orientation": "any",
-  "background_color": "#f4f6f3",
+  "background_color": "#ffffff",
   "theme_color": "#0a7d1a",
   "icons": [
-    {"src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any"},
-    {"src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any"},
-    {"src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable"}
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
   ]
 }
