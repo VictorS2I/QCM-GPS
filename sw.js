@@ -1,6 +1,6 @@
 // Service worker : page unique, autonome. Réseau d'abord (les mises à jour apparaissent dès la prochaine ouverture en ligne),
 // copie en cache pour l'usage hors ligne. Changer VERSION à chaque mise en ligne d'une nouvelle page.
-const VERSION = "gps-v1";
+const VERSION = "gps-petits-v2";
 const CACHE = "lecture-gps-" + VERSION;
 const FILES = ["./", "./index.html", "./manifest.webmanifest", "./icons/icon-192.png", "./icons/icon-512.png", "./icons/maskable-512.png", "./icons/apple-touch-icon.png", "./icons/favicon-32.png"];
 self.addEventListener("install", e => {
