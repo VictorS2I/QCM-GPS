@@ -228,6 +228,17 @@ svg.evo { width: 100%; height: auto; display: block; margin: 8px 0 4px; }
 .look .lab { display: block; color: var(--muted); font-size: .8rem; margin-bottom: 6px; }
 .look .seg button { min-height: 40px; padding: 8px 14px; font-size: .9rem; }
 
+figure.blockfig .gpsgrille{margin-top:12px;text-align:left}
+figure.blockfig .gpsgrille>b,.fb .gpsfin>b{display:block;font-size:.85rem;margin-bottom:6px}
+.gpsmx{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px}
+.gpscell{padding:8px 10px;border:1px solid var(--line);border-radius:10px;background:var(--card);min-width:0}
+.gpscell h4{margin:0 0 4px;font-size:.7rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+.gpscell .val{overflow-wrap:anywhere;font-size:.88rem;color:var(--fg)}
+.gpscell.vide .val{color:var(--muted);font-style:italic}
+.gpscell.cur{border:2px solid var(--orange);background:var(--rule-bg)}
+.gpscell.cur .val{font-weight:800;font-size:1.1rem}
+.gpscell.ok{border-color:var(--ok);background:var(--ok-soft)}
+.fb .gpsfin{margin-top:10px}
 figure.blockfig .gpsfig{background:#fff;border-radius:10px;padding:8px;border:1px solid rgba(128,128,128,.25)}
 figure.blockfig .gpsfig>img,figure.blockfig .gpsfig>svg{display:block;width:100%;max-width:680px;height:auto;margin:0 auto}
 figure.blockfig .gpscred{font-size:.72rem;opacity:.7;margin-top:4px;text-align:right}
@@ -288,31 +299,52 @@ figure.blockfig .gpscred{font-size:.72rem;opacity:.7;margin-top:4px;text-align:r
     }
     return '<div class="gpsfig">' + inner + '</div>' + cap;
   }
-  function build(e, col) {
+  const ORD = ['type', 'et', 'er', 'rs', 'zt', 'ct'];
+  const lines = (t) => esc(t).replace(/\n/g, '<br>');
+  const so = (k) => 'Sans objet : ' + (k === 'rs' ? 'aucune référence spécifiée.' : 'aucune contrainte de situation.');
+  // matrice GPS : etat(k) renvoie 'cur' (case posée), 'ok' (case remplie) ou 'vide' (à construire)
+  function gridHTML(e, etat) {
+    let h = '<div class="gpsmx">';
+    ORD.forEach((k) => {
+      const c = e.cols.find((x) => x.key === k), st = etat(k);
+      let val, cls = 'gpscell';
+      if (st === 'cur') { val = '?'; cls += ' cur'; }
+      else if (st === 'ok') { val = c ? lines(c.ok) : so(k); cls += ' ok'; }
+      else { val = 'à construire'; cls += ' vide'; }
+      h += '<div class="' + cls + '"><h4>' + esc(FAM[k]) + '</h4><div class="val">' + val + '</div></div>';
+    });
+    return h + '</div>';
+  }
+  function build(e, col, sel) {
     const c = e.cols.find((x) => x.key === col); if (!c) return null;
+    sel = sel || ORD;
     const all = shuffle([{ t: c.ok, ok: true }].concat(c.ko.slice(0, 3).map((t) => ({ t, ok: false }))));
     const steps = ['**Réponse :** ' + c.ok];
     if (c.expl) steps.push(c.expl);
     if (col === 'zt' && e.cond) steps.push(e.cond);
     const sch = e.schemas && e.schemas[col];
+    const ic = ORD.indexOf(col);
+    const lecture = (k) => !sel.includes(k) || ORD.indexOf(k) < ic;   // case déjà lue (ou donnée)
+    const etat = (k) => k === col ? 'cur' : (lecture(k) && (e.cols.some((x) => x.key === k) || lecture('er')) ? 'ok' : 'vide');
+    const dernier = !sel.some((k) => ORD.indexOf(k) > ic && e.cols.some((x) => x.key === k));
+    const fin = dernier ? '<div class="gpsfin"><b>Grille GPS complète</b>' + gridHTML(e, () => 'ok') + '</div>' : '';
+    const fb = fin + (sch ? '<figure class="gpsch"><div class="gpsch-in">' + sch.svg + '</div><figcaption>' + esc(sch.leg || '') + '</figcaption></figure>' : '');
     return {
       theme: ROOTKEY, family: col, famLabel: FAM[col],
       text: '**Exercice ' + e.id + '.** ' + (e.consigne ? e.consigne + ' ' : '') + PROMPT[col] + (e.cat === 'authentique' && e.a_valider ? ' (exercice à valider)' : ''),
-      math: null, block: figHTML(e), choiceKind: 'text',
-      choices: all.map((x) => x.t), correctIndex: all.findIndex((x) => x.ok), steps,
-      fbHtml: sch ? '<figure class="gpsch"><div class="gpsch-in">' + sch.svg + '</div><figcaption>' + esc(sch.leg || '') + '</figcaption></figure>' : ''
+      math: null, block: figHTML(e) + '<div class="gpsgrille"><b>Grille GPS en construction</b>' + gridHTML(e, etat) + '</div>', choiceKind: 'text',
+      choices: all.map((x) => x.t), correctIndex: all.findIndex((x) => x.ok), steps, fbHtml: fb
     };
   }
   const ROOTKEY = 'gpsp';
+  // un exercice est posé colonne par colonne, dans l'ordre de la grille GPS
   function generateSet(fams, n) {
-    const keys = fams && fams.length ? fams : Object.keys(FAM);
-    const pairs = [];
-    DATA.forEach((e) => keys.forEach((k) => { if (e.cols.some((c) => c.key === k)) pairs.push([e, k]); }));
-    let pool = shuffle(pairs);
-    // un exercice n'apparaît qu'une fois tant que possible
-    const out = [], seen = new Set();
-    for (const [e, k] of pool) { if (out.length >= n) break; if (seen.has(e.id)) continue; seen.add(e.id); out.push(build(e, k)); }
-    for (const [e, k] of pool) { if (out.length >= n) break; const q = build(e, k); if (out.some((o) => o.text === q.text)) continue; out.push(q); }
+    const sel = fams && fams.length ? ORD.filter((k) => fams.includes(k)) : ORD;
+    const ex = shuffle(DATA.map((e) => ({ e, ks: sel.filter((k) => e.cols.some((c) => c.key === k)) })).filter((x) => x.ks.length));
+    const out = [], rest = [];
+    const push = (x, m) => x.ks.slice(0, m).forEach((k) => out.push(build(x.e, k, sel)));
+    for (const x of ex) { if (out.length >= n) break; if (out.length + x.ks.length <= n) push(x, x.ks.length); else rest.push(x); }
+    if (out.length < n && rest.length) push(rest[0], n - out.length);
     return out.slice(0, n).map((q, i) => { q.id = i + 1; return q; });
   }
   root['GPSApp_' + ROOTKEY] = { FAM, generateSet, size: DATA.length, build };
